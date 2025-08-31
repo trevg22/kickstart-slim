@@ -119,7 +119,7 @@ vim.schedule(function() vim.o.clipboard = 'unnamedplus' end)
 -- Enable break indent
 vim.o.breakindent = true
 
--- Save undo history
+-- Enable undo/redo changes even after closing and reopening a file
 vim.o.undofile = true
 
 -- Case-insensitive searching UNLESS \C or one or more capital letters in the search term
@@ -164,6 +164,12 @@ vim.o.scrolloff = 10
 -- See `:help 'confirm'`
 vim.o.confirm = true
 
+-- Disable line wrapping
+vim.o.wrap = false
+
+-- Highlight max chars per line
+-- vim.o.colorcolumn = '120'
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -181,6 +187,9 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 -- NOTE: This won't work in all terminal emulators/tmux/etc. Try your own mapping
 -- or just use <C-\><C-n> to exit terminal mode
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
+
+-- Close current buffer
+vim.keymap.set('n', '<leader>Q', ':bd<CR>', { desc = 'Close current buffer' })
 
 -- TIP: Disable arrow keys in normal mode
 -- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
@@ -212,7 +221,33 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 vim.api.nvim_create_autocmd('TextYankPost', {
   desc = 'Highlight when yanking (copying) text',
   group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
-  callback = function() vim.hl.on_yank() end,
+  callback = function() vim.hl.on_yank { timeout = 200 } end,
+})
+
+-- Restore cursor position on file open
+vim.api.nvim_create_autocmd('BufReadPost', {
+  desc = 'Restore cursor position on file open',
+  group = vim.api.nvim_create_augroup('kickstart-restore-cursor', { clear = true }),
+  pattern = '*',
+  callback = function()
+    local line = vim.fn.line '\'"'
+    if line > 1 and line <= vim.fn.line '$' then
+      vim.cmd 'normal! g\'"'
+    end
+  end,
+})
+
+-- auto-create missing dirs when saving a file
+vim.api.nvim_create_autocmd('BufWritePre', {
+  desc = 'Auto-create missing dirs when saving a file',
+  group = vim.api.nvim_create_augroup('kickstart-auto-create-dir', { clear = true }),
+  pattern = '*',
+  callback = function()
+    local dir = vim.fn.expand '<afile>:p:h'
+    if vim.fn.isdirectory(dir) == 0 then
+      vim.fn.mkdir(dir, 'p')
+    end
+  end,
 })
 
 -- [[ Install `lazy.nvim` plugin manager ]]
@@ -878,9 +913,22 @@ require('lazy').setup({
       },
 
       sources = {
-        default = { 'lsp', 'path', 'snippets', 'lazydev' },
+        default = { 'lsp', 'path', 'snippets', 'lazydev', 'buffer' },
         providers = {
           lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
+          buffer = {
+            -- Make buffer compeletions appear at the end.
+            score_offset = -100,
+            enabled = function()
+              -- Filetypes for which buffer completions are enabled; add filetypes to extend:
+              local enabled_filetypes = {
+                'markdown',
+                'text',
+              }
+              local filetype = vim.bo.filetype
+              return vim.tbl_contains(enabled_filetypes, filetype)
+            end,
+          },
           -- On WSL2, blink.cmp may cause the editor to freeze due to a known limitation.
           -- To address this issue, uncomment the following configuration:
           -- cmdline = {
