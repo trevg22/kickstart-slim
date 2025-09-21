@@ -65,9 +65,21 @@ vim.pack.add {
   { src = "https://github.com/nvim-treesitter/nvim-treesitter", version = "master" },
   { src = 'https://github.com/folke/tokyonight.nvim' },
   { src = "https://github.com/neanias/everforest-nvim",branch="main" },
+	{ src = "https://github.com/stevearc/oil.nvim" },
+{ src = "https://github.com/echasnovski/mini.pick" },
+{src="https://github.com/folke/todo-comments.nvim.git"},
 }
 
+require("custom.plugins").setup()
+require "mini.pick".setup()
+require "oil".setup()
+
+vim.keymap.set('n', '<leader>f', ":Pick files<CR>")
+vim.keymap.set('n', '<leader><leader>', ":Pick buffers<CR>")
+vim.keymap.set('n', '<leader>sg', ":Pick grep_live<CR>")
 vim.lsp.enable('clangd')
+vim.lsp.enable('gopls')
+
 require'nvim-treesitter.configs'.setup {
   -- A list of parser names, or "all" (the listed parsers MUST always be installed)
   ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "markdown", "markdown_inline" },
@@ -348,9 +360,7 @@ fuzzy = {
 
   -- Frecency tracks the most recently/frequently used items and boosts the score of the item
   -- Note, this does not apply when using the Lua implementation.
-  --use_frecency = true,
   --
-  --fr
 
   -- Proximity bonus boosts the score of items matching nearby words
   -- Note, this does not apply when using the Lua implementation.
@@ -431,6 +441,17 @@ require('tokyonight').setup({
 
   --vim.cmd.colorscheme 'tokyonight-night'
   vim.cmd.colorscheme 'everforest'
+
+-- Highlight todo, notes, etc in comments
+ require( "todo-comments").setup({
+  dependencies = { "nvim-lua/plenary.nvim" },
+  opts = {
+    -- your configuration comes here
+    -- or leave it empty to use the default settings
+    -- refer to the configuration section below
+  }
+})
+
 -- Here is a more advanced example where we pass configuration
 -- options to `gitsigns.nvim`.
 --
@@ -1060,9 +1081,7 @@ require('tokyonight').setup({
 --     -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
 --     vim.cmd.colorscheme 'tokyonight-night'
 --   end,
--- },
-
--- Highlight todo, notes, etc in comments
+-- }ACK-- Highlight todo, notes, etc in comments
 --{ 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
 -- { -- Collection of various small independent plugins/modules
