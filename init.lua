@@ -62,9 +62,9 @@ vim.pack.add {
   { src = 'https://github.com/neovim/nvim-lspconfig' },
   { src = 'https://github.com/stevearc/conform.nvim'},
   { src = 'https://github.com/saghen/blink.cmp' },
-  { src = "https://github.com/nvim-treesitter/nvim-treesitter", version = "master" },
+  { src = "https://github.com/nvim-treesitter/nvim-treesitter", version = "main" },
   { src = 'https://github.com/folke/tokyonight.nvim' },
-  { src = "https://github.com/neanias/everforest-nvim",branch="main" },
+  { src = "https://github.com/neanias/everforest-nvim",version="main" },
 	{ src = "https://github.com/stevearc/oil.nvim" },
 { src = "https://github.com/echasnovski/mini.pick" },
 {src="https://github.com/folke/todo-comments.nvim.git"},
@@ -74,11 +74,12 @@ require("custom.plugins").setup()
 require "mini.pick".setup()
 require "oil".setup()
 
-vim.keymap.set('n', '<leader>f', ":Pick files<CR>")
+vim.keymap.set('n', '<leader>sf', ":Pick files<CR>")
 vim.keymap.set('n', '<leader><leader>', ":Pick buffers<CR>")
 vim.keymap.set('n', '<leader>sg', ":Pick grep_live<CR>")
 vim.lsp.enable('clangd')
 vim.lsp.enable('gopls')
+vim.lsp.enable('lua_ls')
 
 require'nvim-treesitter.configs'.setup {
   -- A list of parser names, or "all" (the listed parsers MUST always be installed)
@@ -92,7 +93,7 @@ require'nvim-treesitter.configs'.setup {
   auto_install = true,
 
   -- List of parsers to ignore installing (or "all")
-  ignore_install = { "javascript" },
+  ignore_install = { "javascript","org" },
 
   ---- If you need to change the installation directory of the parsers (see -> Advanced Setup)
   -- parser_install_dir = "/some/path/to/store/parsers", -- Remember to run vim.opt.runtimepath:append("/some/path/to/store/parsers")!
@@ -148,7 +149,10 @@ require'nvim-treesitter.configs'.setup {
 -- }
 --)
 
-
+require('guess-indent').setup({
+  auto_cmd = true,  -- Set to false to disable automatic execution
+  override_editorconfig = false, 
+})
 require('gitsigns').setup {
   signs = {
     add = { text = '+' },
@@ -208,47 +212,69 @@ require('which-key').setup {
     { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
   },
 }
--- { -- Autoformat
---   'stevearc/conform.nvim',
-require('conform').setup({
-  event = { 'BufWritePre' },
-  cmd = { 'ConformInfo' },
-  keys = {
-    {
-      '<leader>f',
-      function()
-        require('conform').format { async = true, lsp_format = 'fallback' }
-      end,
-      mode = '',
-      desc = '[F]ormat buffer',
-    },
+ require("conform").setup({
+  format_after_save = {
+    lsp_format = "fallback",
   },
-  opts = {
-    notify_on_error = false,
-    format_on_save = function(bufnr)
-      -- Disable "format_on_save lsp_fallback" for languages that don't
-      -- have a well standardized coding style. You can add additional
-      -- languages here or re-enable it for the disabled ones.
-      local disable_filetypes = { c = true, cpp = true }
-      if disable_filetypes[vim.bo[bufnr].filetype] then
-        return nil
-      else
-        return {
-          timeout_ms = 500,
-          lsp_format = 'fallback',
-        }
-      end
-    end,
-    formatters_by_ft = {
-      lua = { 'stylua' },
-      -- Conform can also run multiple formatters sequentially
-      -- python = { "isort", "black" },
-      --
-      -- You can use 'stop_after_first' to run the first available formatter from the list
-      -- javascript = { "prettierd", "prettier", stop_after_first = true },
-    },
+  formatters_by_ft = {
+    lua = { "stylua" },
+    cpp={"clang-format"},
+    -- Conform will run multiple formatters sequentially
+    python = { "isort", "black" },
+    -- You can customize some of the format options for the filetype (:help conform.format)
+    rust = { "rustfmt", lsp_format = "fallback" },
+    -- Conform will run the first available formatter
+    javascript = { "prettierd", "prettier", stop_after_first = true },
   },
 })
+
+vim.api.nvim_create_autocmd("BufWritePre", {
+  pattern = "*",
+  callback = function(args)
+    require("conform").format({ bufnr = args.buf })
+  end,
+})
+-- { -- Autoformat
+--   'stevearc/conform.nvim',
+-- require('conform').setup({
+--   event = { 'BufWritePre' },
+--   cmd = { 'ConformInfo' },
+--   keys = {
+--     {
+--       '<leader>f',
+--       function()
+--         require('conform').format { async = true, lsp_format = 'fallback' }
+--       end,
+--       mode = '',
+--       desc = '[F]ormat buffer',
+--     },
+--   },
+--   opts = {
+--     notify_on_error = false,
+--     format_on_save = function(bufnr)
+--       -- Disable "format_on_save lsp_fallback" for languages that don't
+--       -- have a well standardized coding style. You can add additional
+--       -- languages here or re-enable it for the disabled ones.
+--       local disable_filetypes = { c = true, cpp = true }
+--       if disable_filetypes[vim.bo[bufnr].filetype] then
+--         return nil
+--       else
+--         return {
+--           timeout_ms = 500,
+--           lsp_format = 'fallback',
+--         }
+--       end
+--     end,
+--     formatters_by_ft = {
+--       lua = { 'stylua' },
+--       -- Conform can also run multiple formatters sequentially
+--       -- python = { "isort", "black" },
+--       --
+--       -- You can use 'stop_after_first' to run the first available formatter from the list
+--       -- javascript = { "prettierd", "prettier", stop_after_first = true },
+--     },
+--   },
+-- })
 -- { -- Autocompletion
 --   'saghen/blink.cmp',
 require('blink.cmp').setup({
@@ -429,15 +455,15 @@ fuzzy = {
 --   -- change the command in the config to whatever the name of that colorscheme is.
 --   --
 --   -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-require('tokyonight').setup({
-      styles = {
-        comments = { italic = false }, -- Disable italics in comments
-    }
-
-    -- Load the colorscheme here.
-    -- Like many other themes, this one has different styles, and you could load
-    -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
- })
+-- require('tokyonight').setup({
+--       styles = {
+--         comments = { italic = false }, -- Disable italics in comments
+--     }
+--
+--     -- Load the colorscheme here.
+--     -- Like many other themes, this one has different styles, and you could load
+--     -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
+--  })
 
   --vim.cmd.colorscheme 'tokyonight-night'
   vim.cmd.colorscheme 'everforest'
