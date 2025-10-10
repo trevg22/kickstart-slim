@@ -20,6 +20,6 @@ require('orgmode').setup({
       require("org-roam").setup({
       directory = "~/Documents/vault-org/roam/",
     })
-     end
+       end
 
 return M
