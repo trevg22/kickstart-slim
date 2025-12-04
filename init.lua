@@ -2,7 +2,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 vim.g.have_nerd_font = true
 vim.o.number = true
-vim.o.relativenumber=true
+vim.o.relativenumber = true
 vim.o.mouse = 'a'
 vim.o.showmode = false
 vim.schedule(function()
@@ -31,7 +31,6 @@ vim.api.nvim_create_autocmd("SwapExists", {
 })
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
-
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
 -- is not what someone will guess without a bit more experience.
@@ -65,15 +64,16 @@ vim.pack.add {
   { src = 'https://github.com/NMAC427/guess-indent.nvim' },
   { src = 'https://github.com/folke/which-key.nvim' },
   { src = 'https://github.com/neovim/nvim-lspconfig' },
-  { src = 'https://github.com/stevearc/conform.nvim'},
+  { src = 'https://github.com/stevearc/conform.nvim' },
   { src = 'https://github.com/saghen/blink.cmp' },
   { src = "https://github.com/nvim-treesitter/nvim-treesitter", version = "main" },
   { src = 'https://github.com/folke/tokyonight.nvim' },
-  { src = "https://github.com/neanias/everforest-nvim",version="main" },
-	{ src = "https://github.com/stevearc/oil.nvim" },
-{ src = "https://github.com/echasnovski/mini.pick" },
-{ src = "https://github.com/echasnovski/mini.extra" },
-{src="https://github.com/folke/todo-comments.nvim.git"},
+  { src = "https://github.com/neanias/everforest-nvim",         version = "main" },
+  { src = "https://github.com/stevearc/oil.nvim" },
+  { src = "https://github.com/echasnovski/mini.pick" },
+  { src = "https://github.com/echasnovski/mini.extra" },
+  { src = "https://github.com/folke/todo-comments.nvim.git" },
+  { src = "https://github.com/folke/lazydev.nvim.git" },
 }
 
 
@@ -94,13 +94,31 @@ require "oil".setup()
 vim.keymap.set('n', '<leader>sf', ":Pick files<CR>")
 vim.keymap.set('n', '<leader><leader>', ":Pick buffers<CR>")
 vim.keymap.set('n', '<leader>sg', ":Pick grep_live<CR>")
-vim.keymap.set('n', '<leader>sg', ":Pick resume<CR>")
+vim.keymap.set('n', '<leader>sr', ":Pick resume<CR>")
 vim.keymap.set('n', '<leader>d', ":lua vim.diagnostic.open_float()<CR>")
 vim.lsp.enable('clangd')
 vim.lsp.enable('gopls')
 vim.lsp.enable('lua_ls')
+--vim.env.PATH = os.getenv("HOME") .. "/.cargo/bin:" .. vim.env.PATH
+vim.lsp.config('rust_analyzer', {
+  -- Server-specific settings. See `:help lsp-quickstart`
+  settings = {
+    ['rust-analyzer'] = {},
+  },
+})
+vim.lsp.enable('rust_analyzer')
 
-require'nvim-treesitter.configs'.setup {
+vim.keymap.set('n', 'grn', vim.lsp.buf.rename, { desc = '[R]e[n]ame' })
+vim.keymap.set('n', 'gra', vim.lsp.buf.code_action, { desc = '[G]oto Code [A]ction' })
+vim.keymap.set('n', 'grr', vim.lsp.buf.references, { desc = '[G]oto [R]eferences' })
+vim.keymap.set('n', 'gri', vim.lsp.buf.implementation, { desc = '[G]oto [I]mplementation' })
+vim.keymap.set('n', 'grd', vim.lsp.buf.definition, { desc = '[G]oto [D]efinition' })
+vim.keymap.set('n', 'grD', vim.lsp.buf.declaration, { desc = '[G]oto [D]eclaration' })
+vim.keymap.set('n', 'gO', vim.lsp.buf.document_symbol, { desc = 'Open Document Symbols' })
+vim.keymap.set('n', 'gW', vim.lsp.buf.workspace_symbol, { desc = 'Open Workspace Symbols' })
+-- vim.keymap.set('grt', require('telescope.builtin').lsp_type_definitions, '[G]oto [T]ype Definition')
+
+require 'nvim-treesitter.configs'.setup {
   -- A list of parser names, or "all" (the listed parsers MUST always be installed)
   ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "markdown", "markdown_inline" },
 
@@ -112,7 +130,7 @@ require'nvim-treesitter.configs'.setup {
   auto_install = true,
 
   -- List of parsers to ignore installing (or "all")
-  ignore_install = { "javascript","org" },
+  ignore_install = { "javascript", "org" },
 
   ---- If you need to change the installation directory of the parsers (see -> Advanced Setup)
   -- parser_install_dir = "/some/path/to/store/parsers", -- Remember to run vim.opt.runtimepath:append("/some/path/to/store/parsers")!
@@ -127,11 +145,11 @@ require'nvim-treesitter.configs'.setup {
     --disable = { "c", "rust" },
     -- Or use a function for more flexibility, e.g. to disable slow treesitter highlight for large files
     disable = function(lang, buf)
-        local max_filesize = 100 * 1024 -- 100 KB
-        local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
-        if ok and stats and stats.size > max_filesize then
-            return true
-        end
+      local max_filesize = 100 * 1024 -- 100 KB
+      local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+      if ok and stats and stats.size > max_filesize then
+        return true
+      end
     end,
 
     -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
@@ -143,8 +161,8 @@ require'nvim-treesitter.configs'.setup {
 }
 
 require('guess-indent').setup({
-  auto_cmd = true,  -- Set to false to disable automatic execution
-  override_editorconfig = false, 
+  auto_cmd = true, -- Set to false to disable automatic execution
+  override_editorconfig = false,
 })
 require('gitsigns').setup {
   signs = {
@@ -205,13 +223,13 @@ require('which-key').setup {
     { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
   },
 }
- require("conform").setup({
+require("conform").setup({
   format_after_save = {
     lsp_format = "fallback",
   },
   formatters_by_ft = {
     lua = { "stylua" },
-    cpp={"clang-format"},
+    cpp = { "clang-format" },
     -- Conform will run multiple formatters sequentially
     python = { "isort", "black" },
     -- You can customize some of the format options for the filetype (:help conform.format)
@@ -227,6 +245,16 @@ vim.api.nvim_create_autocmd("BufWritePre", {
     require("conform").format({ bufnr = args.buf })
   end,
 })
+require("lazydev").setup({
+  ft = "lua",
+  opts = {
+    library = {
+      -- Load luvit types when the `vim.uv` word is found
+      { path = "${3rd}/luv/library", words = { "vim%.uv" } },
+    },
+  },
+})
+
 --TODO: renable snippets
 -- { -- Autocompletion
 --   'saghen/blink.cmp',
@@ -264,164 +292,148 @@ require('blink.cmp').setup({
   -- },
   --- @module 'blink.cmp'
   --- @type blink.cmp.Config
-    keymap = {
-      -- 'default' (recommended) for mappings similar to built-in completions
-      --   <c-y> to accept ([y]es) the completion.
-      --    This will auto-import if your LSP supports it.
-      --    This will expand snippets if the LSP sent a snippet.
-      -- 'super-tab' for tab to accept
-      -- 'enter' for enter to accept
-      -- 'none' for no mappings
-      --
-      -- For an understanding of why the 'default' preset is recommended,
-      -- you will need to read `:help ins-completion`
-      --
-      -- No, but seriously. Please read `:help ins-completion`, it is really good!
-      --
-      -- All presets have the following mappings:
-      -- <tab>/<s-tab>: move to right/left of your snippet expansion
-      -- <c-space>: Open menu or open docs if already open
-      -- <c-n>/<c-p> or <up>/<down>: Select next/previous item
-      -- <c-e>: Hide menu
-      -- <c-k>: Toggle signature help
-      --
-      -- See :h blink-cmp-config-keymap for defining your own keymap
-      preset = 'default',
-
-      -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
-      --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
-    },
-
-    appearance = {
-      -- 'mono' (default) for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
-      -- Adjusts spacing to ensure icons are aligned
-      nerd_font_variant = 'mono',
-    },
-
-    completion = {
-      -- By default, you may press `<c-space>` to show the documentation.
-      -- Optionally, set `auto_show = true` to show the documentation after a delay.
-      documentation = { auto_show = false, auto_show_delay_ms = 500 },
-    },
-
-    sources = {
-      default = { 'lsp', 'path', 'snippets' },
-      providers = {
-        --lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
-      },
-    },
-
-    --snippets = { preset = 'luasnip' },
-    
-
-    -- Blink.cmp includes an optional, recommended rust fuzzy matcher,
-    -- which automatically downloads a prebuilt binary when enabled.
+  keymap = {
+    -- 'default' (recommended) for mappings similar to built-in completions
+    --   <c-y> to accept ([y]es) the completion.
+    --    This will auto-import if your LSP supports it.
+    --    This will expand snippets if the LSP sent a snippet.
+    -- 'super-tab' for tab to accept
+    -- 'enter' for enter to accept
+    -- 'none' for no mappings
     --
-    -- By default, we use the Lua implementation instead, but you may enable
-    -- the rust implementation via `'prefer_rust_with_warning'`
+    -- For an understanding of why the 'default' preset is recommended,
+    -- you will need to read `:help ins-completion`
     --
-    -- See :h blink-cmp-config-fuzzy for more information
-fuzzy = {
-  -- Controls which implementation to use for the fuzzy matcher.
-  --
-  -- 'prefer_rust_with_warning' (Recommended) If available, use the Rust implementation, automatically downloading prebuilt binaries on supported systems. Fallback to the Lua implementation when not available, emitting a warning message.
-  -- 'prefer_rust' If available, use the Rust implementation, automatically downloading prebuilt binaries on supported systems. Fallback to the Lua implementation when not available.
-  -- 'rust' Always use the Rust implementation, automatically downloading prebuilt binaries on supported systems. Error if not available.
-  -- 'lua' Always use the Lua implementation, doesn't download any prebuilt binaries
-  --
-  -- See the prebuilt_binaries section for controlling the download behavior
-  implementation = 'prefer_rust_with_warning',
+    -- No, but seriously. Please read `:help ins-completion`, it is really good!
+    --
+    -- All presets have the following mappings:
+    -- <tab>/<s-tab>: move to right/left of your snippet expansion
+    -- <c-space>: Open menu or open docs if already open
+    -- <c-n>/<c-p> or <up>/<down>: Select next/previous item
+    -- <c-e>: Hide menu
+    -- <c-k>: Toggle signature help
+    --
+    -- See :h blink-cmp-config-keymap for defining your own keymap
+    preset = 'default',
 
-  -- Allows for a number of typos relative to the length of the query
-  -- Set this to 0 to match the behavior of fzf
-  -- Note, this does not apply when using the Lua implementation.
-  max_typos = function(keyword) return math.floor(#keyword / 4) end,
-
-  -- Frecency tracks the most recently/frequently used items and boosts the score of the item
-  -- Note, this does not apply when using the Lua implementation.
-  --
-
-  -- Proximity bonus boosts the score of items matching nearby words
-  -- Note, this does not apply when using the Lua implementation.
-  use_proximity = true,
-
-  -- UNSAFE!! When enabled, disables the lock and fsync when writing to the frecency database. This should only be used on unsupported platforms (i.e. alpine termux)
-  -- Note, this does not apply when using the Lua implementation.
-  --use_unsafe_no_lock = false,
-
-  -- Controls which sorts to use and in which order, falling back to the next sort if the first one returns nil
-  -- You may pass a function instead of a string to customize the sorting
-  sorts = {
-    -- (optionally) always prioritize exact matches
-    -- 'exact',
-
-    -- pass a function for custom behavior
-    -- function(item_a, item_b)
-    --   return item_a.score > item_b.score
-    -- end,
-
-    'score',
-    'sort_text',
+    -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
+    --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
   },
 
-  prebuilt_binaries = {
-    -- Whether or not to automatically download a prebuilt binary from github. If this is set to `false`,
-    -- you will need to manually build the fuzzy binary dependencies by running `cargo build --release`
-    -- Disabled by default when `fuzzy.implementation = 'lua'`
-    download = true,
+  appearance = {
+    -- 'mono' (default) for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
+    -- Adjusts spacing to ensure icons are aligned
+    nerd_font_variant = 'mono',
+  },
 
-    -- Ignores mismatched version between the built binary and the current git sha, when building locally
-    ignore_version_mismatch = false,
+  completion = {
+    -- By default, you may press `<c-space>` to show the documentation.
+    -- Optionally, set `auto_show = true` to show the documentation after a delay.
+    documentation = { auto_show = false, auto_show_delay_ms = 500 },
+  },
 
-    -- When downloading a prebuilt binary, force the downloader to resolve this version. If this is unset
-    -- then the downloader will attempt to infer the version from the checked out git tag (if any).
+  sources = {
+    default = { 'lsp', 'path', 'snippets' },
+    providers = {
+      lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
+    },
+  },
+
+  --snippets = { preset = 'luasnip' },
+
+
+  -- Blink.cmp includes an optional, recommended rust fuzzy matcher,
+  -- which automatically downloads a prebuilt binary when enabled.
+  --
+  -- By default, we use the Lua implementation instead, but you may enable
+  -- the rust implementation via `'prefer_rust_with_warning'`
+  --
+  -- See :h blink-cmp-config-fuzzy for more information
+  fuzzy = {
+    -- Controls which implementation to use for the fuzzy matcher.
     --
-    -- Beware that if the fuzzy matcher changes while tracking main then this may result in blink breaking.
-    force_version = nil,
-
-    -- When downloading a prebuilt binary, force the downloader to use this system triple. If this is unset
-    -- then the downloader will attempt to infer the system triple from `jit.os` and `jit.arch`.
-    -- Check the latest release for all available system triples
+    -- 'prefer_rust_with_warning' (Recommended) If available, use the Rust implementation, automatically downloading prebuilt binaries on supported systems. Fallback to the Lua implementation when not available, emitting a warning message.
+    -- 'prefer_rust' If available, use the Rust implementation, automatically downloading prebuilt binaries on supported systems. Fallback to the Lua implementation when not available.
+    -- 'rust' Always use the Rust implementation, automatically downloading prebuilt binaries on supported systems. Error if not available.
+    -- 'lua' Always use the Lua implementation, doesn't download any prebuilt binaries
     --
-    -- Beware that if the fuzzy matcher changes while tracking main then this may result in blink breaking.
-    force_system_triple = nil,
+    -- See the prebuilt_binaries section for controlling the download behavior
+    implementation = 'prefer_rust_with_warning',
 
-    -- Extra arguments that will be passed to curl like { 'curl', ..extra_curl_args, ..built_in_args }
-    extra_curl_args = {},
+    -- Allows for a number of typos relative to the length of the query
+    -- Set this to 0 to match the behavior of fzf
+    -- Note, this does not apply when using the Lua implementation.
+    max_typos = function(keyword) return math.floor(#keyword / 4) end,
 
-    proxy = {
+    -- Frecency tracks the most recently/frequently used items and boosts the score of the item
+    -- Note, this does not apply when using the Lua implementation.
+    --
+
+    -- Proximity bonus boosts the score of items matching nearby words
+    -- Note, this does not apply when using the Lua implementation.
+    use_proximity = true,
+
+    -- UNSAFE!! When enabled, disables the lock and fsync when writing to the frecency database. This should only be used on unsupported platforms (i.e. alpine termux)
+    -- Note, this does not apply when using the Lua implementation.
+    --use_unsafe_no_lock = false,
+
+    -- Controls which sorts to use and in which order, falling back to the next sort if the first one returns nil
+    -- You may pass a function instead of a string to customize the sorting
+    sorts = {
+      -- (optionally) always prioritize exact matches
+      -- 'exact',
+
+      -- pass a function for custom behavior
+      -- function(item_a, item_b)
+      --   return item_a.score > item_b.score
+      -- end,
+
+      'score',
+      'sort_text',
+    },
+
+    prebuilt_binaries = {
+      -- Whether or not to automatically download a prebuilt binary from github. If this is set to `false`,
+      -- you will need to manually build the fuzzy binary dependencies by running `cargo build --release`
+      -- Disabled by default when `fuzzy.implementation = 'lua'`
+      download = true,
+
+      -- Ignores mismatched version between the built binary and the current git sha, when building locally
+      ignore_version_mismatch = false,
+
+      -- When downloading a prebuilt binary, force the downloader to resolve this version. If this is unset
+      -- then the downloader will attempt to infer the version from the checked out git tag (if any).
+      --
+      -- Beware that if the fuzzy matcher changes while tracking main then this may result in blink breaking.
+      force_version = nil,
+
+      -- When downloading a prebuilt binary, force the downloader to use this system triple. If this is unset
+      -- then the downloader will attempt to infer the system triple from `jit.os` and `jit.arch`.
+      -- Check the latest release for all available system triples
+      --
+      -- Beware that if the fuzzy matcher changes while tracking main then this may result in blink breaking.
+      force_system_triple = nil,
+
+      -- Extra arguments that will be passed to curl like { 'curl', ..extra_curl_args, ..built_in_args }
+      extra_curl_args = {},
+
+      proxy = {
         -- When downloading a prebuilt binary, use the HTTPS_PROXY environment variable
         from_env = true,
 
         -- When downloading a prebuilt binary, use this proxy URL. This will ignore the HTTPS_PROXY environment variable
         url = nil,
+      },
     },
   },
-},
 
-    -- Shows a signature help window while you type arguments for a function
-    signature = { enabled = true },
+  -- Shows a signature help window while you type arguments for a function
+  signature = { enabled = true },
 }
 )
--- { -- You can easily change to a different colorscheme.
---   -- Change the name of the colorscheme plugin below, and then
---   -- change the command in the config to whatever the name of that colorscheme is.
---   --
---   -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
--- require('tokyonight').setup({
---       styles = {
---         comments = { italic = false }, -- Disable italics in comments
---     }
---
---     -- Load the colorscheme here.
---     -- Like many other themes, this one has different styles, and you could load
---     -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
---  })
-
-  --vim.cmd.colorscheme 'tokyonight-night'
 
 -- Highlight todo, notes, etc in comments
- require( "todo-comments").setup({
+require("todo-comments").setup({
   dependencies = { "nvim-lua/plenary.nvim" },
   opts = {
     -- your configuration comes here
@@ -443,23 +455,6 @@ fuzzy = {
 --
 -- Then, because we use the `opts` key (recommended), the configuration runs
 -- after the plugin has been loaded as `require(MODULE).setup(opts)`.
-
---TODO: enable lazydev
--- LSP Plugins
--- {
---   -- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
---   -- used for completion, annotations and signatures of Neovim apis
---   'folke/lazydev.nvim',
---   ft = 'lua',
---   opts = {
---     library = {
---       -- Load luvit types when the `vim.uv` word is found
---       { path = '${3rd}/luv/library', words = { 'vim%.uv' } },
---     },
---   },
--- },
---
-
 
 --TODO: enable min or treesitter textobjects
 -- { -- Collection of various small independent plugins/modules
@@ -499,55 +494,3 @@ fuzzy = {
 --     --  Check out: https://github.com/echasnovski/mini.nvim
 --   end,
 -- },
-
--- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
--- init.lua. If you want these files, they are in the repository, so you can just download them and
--- place them in the correct locations.
-
--- NOTE: Next step on your Neovim journey: Add/Configure additional plugins for Kickstart
---
---  Here are some example plugins that I've included in the Kickstart repository.
---  Uncomment any of the lines below to enable them (you will need to restart nvim).
---
--- require 'kickstart.plugins.debug',
--- require 'kickstart.plugins.indent_line',
--- require 'kickstart.plugins.lint',
--- require 'kickstart.plugins.autopairs',
--- require 'kickstart.plugins.neo-tree',
--- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
-
--- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
---    This is the easiest way to modularize your config.
---
---  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
--- { import = 'custom.plugins' },
---
--- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
--- Or use telescope!
--- In normal mode type `<space>sh` then write `lazy.nvim-plugin`
--- you can continue same window with `<space>sr` which resumes last telescope search
---},
---{
---   ui = {
---     -- If you are using a Nerd Font: set icons to an empty table which will use the
---     -- default lazy.nvim defined Nerd Font icons, otherwise define a unicode icons table
---     icons = vim.g.have_nerd_font and {} or {
---       cmd = '⌘',
---       config = '🛠',
---       event = '📅',
---       ft = '📂',
---       init = '⚙',
---       keys = '🗝',
---       plugin = '🔌',
---       runtime = '💻',
---       require = '🌙',
---       source = '📄',
---       start = '🚀',
---       task = '📌',
---       lazy = '💤 ',
---     },
---   },
--- })
-
--- The line beneath this is called `modeline`. See `:help modeline`
--- vim: ts=2 sts=2 sw=2 et
