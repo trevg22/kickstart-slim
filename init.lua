@@ -74,6 +74,12 @@ vim.pack.add {
   { src = "https://github.com/echasnovski/mini.extra" },
   { src = "https://github.com/folke/todo-comments.nvim.git" },
   { src = "https://github.com/folke/lazydev.nvim.git" },
+  { src = "https://github.com/folke/snacks.nvim" },
+  { src = "https://github.com/MunifTanjim/nui.nvim" },
+  { src = "https://github.com/harrisoncramer/gitlab.nvim" },
+  { src = "https://github.com/nvim-lua/plenary.nvim" },
+  { src = "https://github.com/sindrets/diffview.nvim" },
+  { src = "https://github.com/stevearc/dressing.nvim" },
 }
 
 
@@ -95,17 +101,16 @@ vim.keymap.set('n', '<leader>sf', ":Pick files<CR>")
 vim.keymap.set('n', '<leader><leader>', ":Pick buffers<CR>")
 vim.keymap.set('n', '<leader>sg', ":Pick grep_live<CR>")
 vim.keymap.set('n', '<leader>sr', ":Pick resume<CR>")
+vim.keymap.set('n', '<leader>sk', ":Pick keymaps<CR>")
+vim.keymap.set('n', '<leader>sd', ":Pick diagnostic<CR>")
+vim.keymap.set('n', '<leader>sd', ":Pick commands<CR>")
 vim.keymap.set('n', '<leader>d', ":lua vim.diagnostic.open_float()<CR>")
+vim.keymap.set('n', '<leader>gB', ":lua Snacks.gitbrowse()<CR>")
+vim.keymap.set('n', '<leader>gg', ":lua Snacks.lazygit()<CR>")
+
 vim.lsp.enable('clangd')
 vim.lsp.enable('gopls')
 vim.lsp.enable('lua_ls')
---vim.env.PATH = os.getenv("HOME") .. "/.cargo/bin:" .. vim.env.PATH
-vim.lsp.config('rust_analyzer', {
-  -- Server-specific settings. See `:help lsp-quickstart`
-  settings = {
-    ['rust-analyzer'] = {},
-  },
-})
 vim.lsp.enable('rust_analyzer')
 
 vim.keymap.set('n', 'grn', vim.lsp.buf.rename, { desc = '[R]e[n]ame' })
@@ -118,6 +123,33 @@ vim.keymap.set('n', 'gO', vim.lsp.buf.document_symbol, { desc = 'Open Document S
 vim.keymap.set('n', 'gW', vim.lsp.buf.workspace_symbol, { desc = 'Open Workspace Symbols' })
 -- vim.keymap.set('grt', require('telescope.builtin').lsp_type_definitions, '[G]oto [T]ype Definition')
 
+
+require("plenary")
+require("diffview").setup()
+require("gitlab").setup()
+require("dressing").setup()
+
+require "snacks".setup {
+  gitbrowse = {
+    open = function(url)
+      vim.ui.open(url)
+    end,
+  },
+  ui = { enabled = true },
+  input = { enabled = true },
+  lazygit = { enabled = true },
+  quickfile = { enabled = true },
+  gh = {
+  },
+  picker = {
+    sources = {
+      gh_issue = {
+      },
+      gh_pr = {
+      }
+    }
+  },
+}
 require 'nvim-treesitter.configs'.setup {
   -- A list of parser names, or "all" (the listed parsers MUST always be installed)
   ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "markdown", "markdown_inline" },
