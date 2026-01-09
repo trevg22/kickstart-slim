@@ -26,6 +26,8 @@ vim.o.cursorline = true
 vim.o.scrolloff = 10
 vim.o.confirm = true
 vim.opt.swapfile = true
+vim.o.exrc=true
+vim.o.secure=false
 vim.api.nvim_create_autocmd("SwapExists", {
   callback = function() vim.v.swapchoice = 'e' end,
 })
@@ -103,16 +105,42 @@ vim.keymap.set('n', '<leader>sg', ":Pick grep_live<CR>")
 vim.keymap.set('n', '<leader>sr', ":Pick resume<CR>")
 vim.keymap.set('n', '<leader>sk', ":Pick keymaps<CR>")
 vim.keymap.set('n', '<leader>sd', ":Pick diagnostic<CR>")
-vim.keymap.set('n', '<leader>sd', ":Pick commands<CR>")
+vim.keymap.set('n', '<leader>sc', ":Pick commands<CR>")
 vim.keymap.set('n', '<leader>d', ":lua vim.diagnostic.open_float()<CR>")
 vim.keymap.set('n', '<leader>gB', ":lua Snacks.gitbrowse()<CR>")
 vim.keymap.set('n', '<leader>gg', ":lua Snacks.lazygit()<CR>")
+
+vim.lsp.config('rust_analyzer', {
+  settings = {
+    ['rust-analyzer'] = {
+      cargo = {
+        checkOnSave = {
+          command = "clippy",          -- This is correct
+          extraArgs = {"--all-targets","--all-features","--","-D","warnings"}
+        },
+      },
+    },
+  },
+})
+-- vim.lsp.config('clangd', {
+--   cmd = { 'clangd','--background-index', '--clang-tidy' },
+-- })
 
 vim.lsp.enable('clangd')
 vim.lsp.enable('gopls')
 vim.lsp.enable('lua_ls')
 vim.lsp.enable('rust_analyzer')
 
+-- Set `:make` to run cargo clippy
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "rust",
+  callback = function()
+    -- Use cargo clippy
+    vim.bo.makeprg = "cargo clippy --message-format=json --all-targets --all-features"
+    -- Use errorformat for Clippy messages
+    vim.bo.errorformat = "%f:%l:%c: %t%*[^:]: %m"
+  end,
+})
 vim.keymap.set('n', 'grn', vim.lsp.buf.rename, { desc = '[R]e[n]ame' })
 vim.keymap.set('n', 'gra', vim.lsp.buf.code_action, { desc = '[G]oto Code [A]ction' })
 vim.keymap.set('n', 'grr', vim.lsp.buf.references, { desc = '[G]oto [R]eferences' })
